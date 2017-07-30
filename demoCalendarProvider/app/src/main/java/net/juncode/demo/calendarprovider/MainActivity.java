@@ -24,19 +24,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClick(View v) {
         if (v.getId() == R.id.readUserButton) {  //读取日历账户
-            CalendarProviderUtils.readUser(this);
+            String result = CalendarProviderUtils.readUser(this);
+            Toast.makeText(this,result,Toast.LENGTH_LONG).show();
         }
         else if (v.getId() == R.id.inputaccount) { //添加日历账户
-            CalendarProviderUtils.initCalendars(this);
+            String result = CalendarProviderUtils.initCalendars(this);
+            Toast.makeText(this,result,Toast.LENGTH_LONG).show();
         }
         else if (v.getId() == R.id.delEventButton) {  //删除事件
             CalendarProviderUtils.deleteVaccinateEvent(this,"doudou");
+            Toast.makeText(this,"批量删除事件成功",Toast.LENGTH_LONG).show();
         }
         else if (v.getId() == R.id.readEventButton) {  //读取事件
-            CalendarProviderUtils.read(this,"doudou");
+            List<VaccinateEvent> eventList = CalendarProviderUtils.read(this, "doudou");
+            Toast.makeText(this,eventList.toString(),Toast.LENGTH_LONG).show();
         }
         else if (v.getId() == R.id.writeEventButton) {
             writeEventButton();
+            Toast.makeText(this,"批量写入事件成功",Toast.LENGTH_LONG).show();
         }
     }
 

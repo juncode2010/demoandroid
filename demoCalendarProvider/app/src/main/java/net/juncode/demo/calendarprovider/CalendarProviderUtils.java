@@ -13,6 +13,7 @@ import android.os.Build;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -33,12 +34,20 @@ public class CalendarProviderUtils {
     private static String calanderRemiderURL = "content://com.android.calendar/reminders";
 
     /**
+     * 根据姓名生成事件
+     * @param name
+     * @return
+     */
+    public static String generateTitle(String name){
+        return name+"该打疫苗了";
+    }
+    /**
      * 批量添加打事件到日历
      */
     public static void addVaccinateEvent(Context context, String babyName, List<Long> dateList){
         //检查是否已添加
         //title前缀
-        String titleHead=babyName+"该打疫苗了";
+        String titleHead=generateTitle(babyName);
         //本地已添加的事件
         List<VaccinateEvent> localEventList=read(context,titleHead);
         if(localEventList.size()!=dateList.size()*2){
@@ -81,7 +90,7 @@ public class CalendarProviderUtils {
      */
     public static void deleteVaccinateEvent(Context context,String babyName){
         //title前缀
-        String titleHead=babyName+"该打疫苗了";
+        String titleHead=generateTitle(babyName);
         delete(context,titleHead);
     }
 
@@ -131,7 +140,8 @@ public class CalendarProviderUtils {
      * 读取指定title的宝宝事件
      * @param context
      */
-    public static List<VaccinateEvent> read(Context context,String title){
+    public static List<VaccinateEvent> read(Context context,String babyName){
+        String title=generateTitle(babyName);
         List<VaccinateEvent> eventList =new LinkedList<VaccinateEvent>();
         Cursor eventCursor = context.getContentResolver().query(Uri.parse(calanderEventURL), null, "title" + " = " + "'"+title+"'", null, null);
         Log.i("事件数量：",eventCursor.getCount()+"");
@@ -150,11 +160,11 @@ public class CalendarProviderUtils {
     }
 
     /**
-     * 删除事件
+     * 删除指定title的事件
      * @param context
      */
     public static void delete(Context context,String title){
-//        int rownum = context.getContentResolver().delete(Uri.parse(calanderEventURL), "title" + " = " + "'"+title+"'", null);  //注意：会全部删除所有账户，新添加的账户一般从id=1开始，
+        int rownum = context.getContentResolver().delete(Uri.parse(calanderEventURL), "title" + " = " + "'"+title+"'", null);
         //可以令_id=你添加账户的id，以此删除你添加的账户
 //        Toast.makeText(context, "删除了: " + rownum, Toast.LENGTH_LONG).show();
     }
@@ -162,7 +172,7 @@ public class CalendarProviderUtils {
     /**
      * 添加账户
      */
-    public static void initCalendars(Context context) {
+    public static String initCalendars(Context context) {
 
         TimeZone timeZone = TimeZone.getDefault();
         ContentValues value = new ContentValues();
@@ -187,9 +197,17 @@ public class CalendarProviderUtils {
                 .build();
 
         context.getContentResolver().insert(calendarUri, value);
+
+        return "添加账户:mygmailaddress@gmail.com";
     }
 
-    public static void readUser(Context context){
+    /**
+     * 读取账户
+     * @param context
+     * @return
+     */
+    public static String readUser(Context context){
+        String result="";
         Cursor userCursor = context.getContentResolver().query(Uri.parse(calanderURL), null, null, null, null);
 
         System.out.println("Count: " + userCursor.getCount());
@@ -202,7 +220,11 @@ public class CalendarProviderUtils {
             String userName1 = userCursor.getString(userCursor.getColumnIndex("name"));
             String userName0 = userCursor.getString(userCursor.getColumnIndex("ACCOUNT_NAME"));
 //            Toast.makeText(this, "NAME: " + userName1 + " -- ACCOUNT_NAME: " + userName0, Toast.LENGTH_LONG).show();
+            result+="NAME: " + userName1 + " -- ACCOUNT_NAME: " + userName0;
         }
+        if(TextUtils.isEmpty(result))
+            result="没有账户,插入事件前,需先添加账户";
+        return result;
     }
 
     public static void checkPermission(Context context){
